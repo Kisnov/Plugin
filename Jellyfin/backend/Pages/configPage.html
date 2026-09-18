@@ -1520,6 +1520,14 @@
                                 </select>
                             </div>
                             <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="DefaultShowLiveTvButton">Show Live TV Button</label>
+                                <select id="DefaultShowLiveTvButton" is="emby-select">
+                                    <option value="">Not set (user decides)</option>
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="DefaultShowSeerrButton">Show Seerr Button</label>
                                 <select id="DefaultShowSeerrButton" is="emby-select">
                                     <option value="">Not set (user decides)</option>
@@ -6032,6 +6040,7 @@
                     setNullableBoolSelect('#DefaultNavbarAlwaysExpanded', defaults.navbarAlwaysExpanded);
                     setNullableBoolSelect('#DefaultEnableFolderView', defaults.enableFolderView);
                     setNullableBoolSelect('#DefaultShowSeerrButton', defaults.showSeerrButton);
+                    setNullableBoolSelect('#DefaultShowLiveTvButton', defaults.showLiveTvButton);
                     setNullableBoolSelect('#DefaultShowDownloadsButton', defaults.showDownloadsButton);
                     setNullableBoolSelect('#DefaultShowServerMessagesButton', defaults.showServerMessagesButton);
 
@@ -6831,6 +6840,7 @@
                         config.DefaultUserSettings.navbarAlwaysExpanded = getNullableBoolSelect('#DefaultNavbarAlwaysExpanded');
                         config.DefaultUserSettings.enableFolderView = getNullableBoolSelect('#DefaultEnableFolderView');
                         config.DefaultUserSettings.showSeerrButton = getNullableBoolSelect('#DefaultShowSeerrButton');
+                        config.DefaultUserSettings.showLiveTvButton = getNullableBoolSelect('#DefaultShowLiveTvButton');
                         config.DefaultUserSettings.showDownloadsButton = getNullableBoolSelect('#DefaultShowDownloadsButton');
                         config.DefaultUserSettings.showServerMessagesButton = getNullableBoolSelect('#DefaultShowServerMessagesButton');
 

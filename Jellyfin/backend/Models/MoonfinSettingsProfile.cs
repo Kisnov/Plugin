@@ -908,6 +908,9 @@ public class MoonfinSettingsProfile
     [JsonPropertyName("showDownloadsButton")]
     public bool? ShowDownloadsButton { get; set; }
 
+    [JsonPropertyName("showLiveTvButton")]
+    public bool? ShowLiveTvButton { get; set; }
+
     [JsonPropertyName("showServerMessagesButton")]
     public bool? ShowServerMessagesButton { get; set; }
 
