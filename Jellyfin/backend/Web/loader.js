@@ -160,50 +160,197 @@
     return "/Moonfin";
   }
 
-  function injectHeaderButton() {
-    if (document.querySelector(".headerMoonfinButton")) return;
+  function isElementVisible(el) {
+    if (!el) return false;
+    if (el.offsetParent !== null) return true;
+    var rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
 
-    var syncBtn = document.querySelector(".headerSyncButton");
-    var headerRight = syncBtn
-      ? syncBtn.parentNode
-      : document.querySelector(".headerRight");
-    if (!headerRight) return;
-
+  function createMoonfinButton() {
     var moonfinBase = resolveMoonfinBase();
     var btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "headerButton headerButtonRight headerMoonfinButton";
+    btn.className =
+      "headerButton headerButtonRight headerMoonfinButton MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeLarge";
     btn.title = "Open Moonfin";
+    btn.setAttribute("aria-label", "Open Moonfin");
     btn.innerHTML =
       '<img src="' +
       moonfinBase +
-      '/Assets/icon.png" style="width:24px;height:24px;border-radius:4px;vertical-align:middle" alt="Moonfin">';
-    btn.addEventListener("click", function () {
+      '/Assets/icon.png" style="width:24px;height:24px;border-radius:4px;vertical-align:middle;display:block" alt="Moonfin">';
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
       persistBootstrapCredentials();
       window.location.href = moonfinBase + "/Web/";
     });
+    return btn;
+  }
 
-    if (syncBtn) {
+  var TOOLBAR_USER_SELECTOR =
+    'button[aria-controls="app-user-menu"], button[aria-label*="UserMenu"], button[aria-label*="User"], .MuiAvatar-root';
+
+  function injectIntoToolbar(toolbar) {
+    if (!toolbar || !isElementVisible(toolbar)) return false;
+
+    var btn = toolbar.querySelector(".headerMoonfinButton");
+    var userBtn = toolbar.querySelector(TOOLBAR_USER_SELECTOR);
+
+    if (userBtn) {
+      var userBox = userBtn.closest(".MuiToolbar-root > *");
+      if (userBox && userBox !== toolbar && userBox.parentNode === toolbar) {
+        if (userBox.previousElementSibling === btn) {
+          return true;
+        }
+        if (!btn) btn = createMoonfinButton();
+        toolbar.insertBefore(btn, userBox);
+        return true;
+      }
+      if (userBtn.parentNode) {
+        if (userBtn.previousElementSibling === btn) {
+          return true;
+        }
+        if (!btn) btn = createMoonfinButton();
+        userBtn.parentNode.insertBefore(btn, userBtn);
+        return true;
+      }
+    }
+
+    if (btn) return true;
+    btn = createMoonfinButton();
+
+    var buttonsContainer = toolbar.querySelector(
+      '.MuiBox-root[style*="justify-content: flex-end"], div[style*="flex-grow: 1"]'
+    );
+    if (buttonsContainer) {
+      buttonsContainer.appendChild(btn);
+    } else {
+      toolbar.appendChild(btn);
+    }
+    return true;
+  }
+
+  function injectIntoLegacyHeader(headerRight) {
+    if (!headerRight || !isElementVisible(headerRight)) return false;
+
+    var btn = headerRight.querySelector(".headerMoonfinButton");
+    var userBtn = headerRight.querySelector(
+      ".headerUserButton, .headerButton-user"
+    );
+
+    if (userBtn && userBtn.parentNode === headerRight) {
+      if (userBtn.previousElementSibling === btn) {
+        return true;
+      }
+      if (!btn) btn = createMoonfinButton();
+      headerRight.insertBefore(btn, userBtn);
+      return true;
+    }
+
+    if (btn) return true;
+    btn = createMoonfinButton();
+
+    var syncBtn = headerRight.querySelector(".headerSyncButton");
+    if (syncBtn && syncBtn.parentNode === headerRight) {
       headerRight.insertBefore(btn, syncBtn);
     } else {
-      headerRight.insertBefore(btn, headerRight.firstChild);
+      headerRight.appendChild(btn);
     }
+    return true;
+  }
+
+  // Keep one button. A header hidden after placement leaves a stale one behind,
+  // so a visible button wins.
+  function removeExtraButtons() {
+    var all = document.querySelectorAll(".headerMoonfinButton");
+    if (all.length < 2) return;
+    var keep = null;
+    for (var k = 0; k < all.length && !keep; k++) {
+      if (isElementVisible(all[k])) keep = all[k];
+    }
+    if (!keep) keep = all[0];
+    for (var m = 0; m < all.length; m++) {
+      if (all[m] !== keep && all[m].parentNode) {
+        all[m].parentNode.removeChild(all[m]);
+      }
+    }
+  }
+
+  function injectHeaderButton() {
+    var injected = false;
+
+    // A toolbar holding the avatar is the right home, so it gets first refusal.
+    var toolbars = document.querySelectorAll(".MuiToolbar-root");
+    for (var i = 0; i < toolbars.length && !injected; i++) {
+      if (
+        toolbars[i].querySelector(TOOLBAR_USER_SELECTOR) &&
+        injectIntoToolbar(toolbars[i])
+      ) {
+        injected = true;
+      }
+    }
+    for (var t = 0; t < toolbars.length && !injected; t++) {
+      if (injectIntoToolbar(toolbars[t])) {
+        injected = true;
+      }
+    }
+
+    var legacyHeaders = document.querySelectorAll(
+      ".skinHeader:not(.osdHeader) .headerRight, .headerRight"
+    );
+    for (var j = 0; j < legacyHeaders.length && !injected; j++) {
+      if (injectIntoLegacyHeader(legacyHeaders[j])) {
+        injected = true;
+      }
+    }
+
+    if (!injected && !document.querySelector(".headerMoonfinButton")) {
+      var anyUserBtn = document.querySelector(
+        ".headerUserButton, button[aria-controls='app-user-menu'], button[aria-label*='UserMenu']"
+      );
+      if (anyUserBtn && isElementVisible(anyUserBtn) && anyUserBtn.parentNode) {
+        if (!anyUserBtn.parentNode.querySelector(".headerMoonfinButton")) {
+          var fallbackBtn = createMoonfinButton();
+          anyUserBtn.parentNode.insertBefore(fallbackBtn, anyUserBtn);
+        }
+      }
+    }
+
+    removeExtraButtons();
   }
 
   if (document.readyState === "complete") {
-    setTimeout(injectHeaderButton, 200);
+    setTimeout(injectHeaderButton, 50);
   } else {
     window.addEventListener("load", function () {
-      setTimeout(injectHeaderButton, 200);
+      setTimeout(injectHeaderButton, 50);
     });
   }
 
-  var lastHeader = null;
-  setInterval(function () {
-    var header = document.querySelector(".headerRight");
-    if (header && header !== lastHeader) {
-      lastHeader = header;
+  // Coalesce a burst of mutations, since every pass scans the whole document.
+  var scanScheduled = false;
+  function scheduleInject() {
+    if (scanScheduled) return;
+    scanScheduled = true;
+    var run = function () {
+      scanScheduled = false;
       injectHeaderButton();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(run);
+    } else {
+      setTimeout(run, 50);
     }
-  }, 1000);
+  }
+
+  try {
+    var observer = new MutationObserver(scheduleInject);
+    observer.observe(document.body || document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  } catch (e) {}
+
+  setInterval(injectHeaderButton, 1000);
 })();
