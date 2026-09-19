@@ -686,7 +686,8 @@ public sealed class GameArtworkReconciliationService : IHostedService
     }
 
     /// <summary>
-    /// Called when the configured game libraries change (see MoonfinPlugin.UpdateConfiguration).
+    /// Called when the game library configuration changes, either the selected libraries or the
+    /// retro games switch (see MoonfinPlugin.UpdateConfiguration).
     /// Queueing reconciliation is the load-bearing half: ROMs already sitting under a newly
     /// selected root raise no filesystem events, so without this they would wait for a scheduled
     /// scan or a restart. The reconciliation pass itself re-syncs the watcher set.
