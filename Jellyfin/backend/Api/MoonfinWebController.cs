@@ -230,8 +230,27 @@ public class MoonfinWebController : ControllerBase
             StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Applies cross-origin isolation to the app document when the admin has opted in.
+    /// Only the top-level document matters: <c>EmulatorController</c> already sends these on
+    /// player.html for a thread-requiring core, but the web client loads the player in an
+    /// iframe, and <c>crossOriginIsolated</c> is false in an iframe whose top-level document
+    /// is not isolated, so <c>SharedArrayBuffer</c> is unavailable and the core refuses.
+    /// </summary>
+    private void ApplyIsolationHeaders()
+    {
+        if (MoonfinPlugin.Instance?.Configuration?.GamesIsolateWebApp != true)
+        {
+            return;
+        }
+
+        Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+        Response.Headers["Cross-Origin-Embedder-Policy"] = "credentialless";
+    }
+
     private IActionResult ServeIndexHtml(string indexPath)
     {
+        ApplyIsolationHeaders();
         var pathBase = Request.PathBase.Value?.TrimEnd('/') ?? string.Empty;
         if (pathBase.Length == 0)
         {

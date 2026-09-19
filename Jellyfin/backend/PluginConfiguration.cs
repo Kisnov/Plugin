@@ -330,6 +330,17 @@ public class PluginConfiguration : BasePluginConfiguration
     public List<string> GameLibraryIds { get; set; } = new();
 
     /// <summary>
+    /// Serves the Moonfin Web app with COOP/COEP so it is cross-origin isolated, which is
+    /// what a thread-requiring core (PSP) needs on the web client. The player already sends
+    /// those headers for such a core, but the web client embeds it in an iframe, and an
+    /// iframe is only isolated when the document above it is, so PSP otherwise fails with
+    /// "This core requires threads, but EJS_threads is not set". Off by default: isolation
+    /// applies to the whole app, and any cross-origin resource a deployment has added to the
+    /// web client must then be CORP/CORS-clean.
+    /// </summary>
+    public bool GamesIsolateWebApp { get; set; } = false;
+
+    /// <summary>
     /// Optional override for where EmulatorJS loads its runtime and cores from. When empty,
     /// self-hosted cores are used if installed under the plugin data folder, otherwise the
     /// EmulatorJS CDN. Advanced users can point this at their own mirror.
