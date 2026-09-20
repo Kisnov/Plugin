@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -496,11 +497,19 @@ namespace Emby.Plugins.Moonfin.Api
             return "nes";
         }
 
+        // Accents fold out before the letter test, so a rom file and a metadata
+        // record that spell the same name with and without them still match.
+        // char.IsLetterOrDigit is true of an accented letter, so without the fold
+        // the two spellings never meet. Mirrors RdbMatcher.NormalizeName on the
+        // Jellyfin side, which has always folded.
         internal static string NormalizeAlphanumericLower(string value)
         {
             var sb = new StringBuilder(value.Length);
-            foreach (var c in value)
+            foreach (var c in value.Normalize(NormalizationForm.FormD))
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark) continue;
                 if (char.IsLetterOrDigit(c)) sb.Append(char.ToLowerInvariant(c));
+            }
             return sb.ToString();
         }
 

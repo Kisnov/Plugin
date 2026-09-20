@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -298,12 +299,19 @@ namespace Emby.Plugins.Moonfin.Api
             return root == null ? null : Path.Combine(root, ".complete");
         }
 
-        private static string NormalizeName(string value)
+        // Accents fold out first, matching LaunchBoxService.NormalizeName on the
+        // Jellyfin side; this function was ported from it without the fold.
+        internal static string NormalizeName(string value)
         {
             var sb = new StringBuilder(value.Length);
             var depth = 0;
-            foreach (var ch in value)
+            foreach (var ch in value.Normalize(NormalizationForm.FormD))
             {
+                if (CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.NonSpacingMark)
+                {
+                    continue;
+                }
+
                 if (ch == '(' || ch == '[')
                 {
                     depth++;
