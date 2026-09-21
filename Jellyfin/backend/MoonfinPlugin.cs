@@ -153,7 +153,10 @@ public class MoonfinPlugin : BasePlugin<PluginConfiguration>, IHasWebPages
             {
                 Name = Name,
                 EmbeddedResourcePath = GetType().Namespace + ".Pages.configPage.html",
-                EnableInMainMenu = true
+                EnableInMainMenu = true,
+                // This slot only takes a Material Icons ligature. The Moonfin mark comes from
+                // the stylesheet in Web/inject.html, so the crescent is what shows without it.
+                MenuIcon = "dark_mode"
             }
         };
     }

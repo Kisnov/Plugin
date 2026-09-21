@@ -124,7 +124,10 @@ namespace Emby.Plugins.Moonfin
                 {
                     Name = Name,
                     EmbeddedResourcePath = ns + ".Pages.configPage.html",
-                    EnableInMainMenu = true
+                    EnableInMainMenu = true,
+                    // This slot only takes a Material Icons ligature, and Emby has no stylesheet
+                    // injection, so a crescent is the closest the sidebar gets to the mark.
+                    MenuIcon = "dark_mode"
                 },
                 // Controller module for the config page, referenced via data-controller="__plugin/moonfinjs".
                 new PluginPageInfo
