@@ -48,6 +48,32 @@ public class GameNameNormalizationTests
         Assert.Equal(expected, GameLaunchBoxHelper.NormalizeName(input));
     }
 
+    // NTFS lets a file or folder name hold an unpaired surrogate, and string.Normalize
+    // throws on one. GetSystems, GetGames, GetGame and ResolveThumbSource all normalise
+    // a folder name outside any try, so a single odd name must not take the scan down.
+    // It falls back to the unfolded name, which is what every name did before folding.
+    [Theory]
+    [InlineData("\ud800")]
+    [InlineData("Game\udfff Name")]
+    [InlineData("\udc00Zelda")]
+    public void NormalizeAlphanumericLower_SurvivesAnUnpairedSurrogate(string input)
+    {
+        Assert.Null(Record.Exception(() => GamesScanner.NormalizeAlphanumericLower(input)));
+    }
+
+    [Fact]
+    public void LaunchBoxNormalizeName_SurvivesAnUnpairedSurrogate()
+    {
+        Assert.Null(Record.Exception(() => GameLaunchBoxHelper.NormalizeName("Game\ud800 (USA)")));
+    }
+
+    // Falling back must still yield the usable part of the name, not give up on it.
+    [Fact]
+    public void NormalizeAlphanumericLower_StillReadsTheNameAroundABadSurrogate()
+    {
+        Assert.Equal("gamename", GamesScanner.NormalizeAlphanumericLower("Game\udfffName"));
+    }
+
     // The bracket depth counter is what keeps a region tag out of the key. Folding runs first,
     // so a combining mark must not be mistaken for a bracket on the way past.
     [Fact]

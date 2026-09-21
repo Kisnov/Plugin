@@ -305,7 +305,7 @@ namespace Emby.Plugins.Moonfin.Api
         {
             var sb = new StringBuilder(value.Length);
             var depth = 0;
-            foreach (var ch in value.Normalize(NormalizationForm.FormD))
+            foreach (var ch in GamesScanner.FoldedForm(value))
             {
                 if (CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.NonSpacingMark)
                 {

@@ -502,10 +502,26 @@ namespace Emby.Plugins.Moonfin.Api
         // char.IsLetterOrDigit is true of an accented letter, so without the fold
         // the two spellings never meet. Mirrors RdbMatcher.NormalizeName on the
         // Jellyfin side, which has always folded.
+        // string.Normalize throws on an unpaired surrogate, which NTFS allows in a
+        // file or folder name. A name that cannot be decomposed is used as it stands
+        // rather than taken down the scan with it: it simply does not fold, which is
+        // what every name did before folding was added.
+        internal static string FoldedForm(string value)
+        {
+            try
+            {
+                return value.Normalize(NormalizationForm.FormD);
+            }
+            catch (ArgumentException)
+            {
+                return value;
+            }
+        }
+
         internal static string NormalizeAlphanumericLower(string value)
         {
             var sb = new StringBuilder(value.Length);
-            foreach (var c in value.Normalize(NormalizationForm.FormD))
+            foreach (var c in FoldedForm(value))
             {
                 if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark) continue;
                 if (char.IsLetterOrDigit(c)) sb.Append(char.ToLowerInvariant(c));
