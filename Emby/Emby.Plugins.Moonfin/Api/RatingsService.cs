@@ -211,7 +211,7 @@ namespace Emby.Plugins.Moonfin.Api
             return Json(new { success = true, removed });
         }
 
-        private static List<MdbListRating> FilterAndOrderRatings(List<MdbListRating> allRatings, List<string>? selectedSources)
+        internal static List<MdbListRating> FilterAndOrderRatings(List<MdbListRating> allRatings, List<string>? selectedSources)
         {
             var sources = (selectedSources != null && selectedSources.Count > 0)
                 ? (IReadOnlyList<string>)selectedSources : DefaultRatingSources;
@@ -221,6 +221,10 @@ namespace Emby.Plugins.Moonfin.Api
                 if (!string.IsNullOrEmpty(r.Source)) bySource[r.Source] = r;
 
             var result = new List<MdbListRating>();
+            // A profile can name one source twice under different spellings, such as the
+            // dashboard's myAnimeList next to a client's myanimelist. The lookup ignores case, so
+            // both would find the same rating and it would be drawn twice. The first one wins.
+            var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var src in sources)
             {
                 // MDBList's raw source names are imdb, metacritic, metacriticuser, trakt,
@@ -234,6 +238,8 @@ namespace Emby.Plugins.Moonfin.Api
                 {
                     lookupSource = "popcorn";
                 }
+
+                if (!emitted.Add(lookupSource)) continue;
 
                 if (bySource.TryGetValue(lookupSource, out var r))
                 {
