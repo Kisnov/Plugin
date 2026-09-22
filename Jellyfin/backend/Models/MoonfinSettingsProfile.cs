@@ -523,6 +523,9 @@ public class MoonfinSettingsProfile
     [JsonPropertyName("osdLockEnabled")]
     public bool? OsdLockEnabled { get; set; }
 
+    [JsonPropertyName("showChapterMarkers")]
+    public bool? ShowChapterMarkers { get; set; }
+
     [JsonPropertyName("detailButtonOrderTv")]
     public List<string>? DetailButtonOrderTv { get; set; }
 
