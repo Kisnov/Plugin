@@ -299,8 +299,7 @@ namespace Emby.Plugins.Moonfin.Api
             return root == null ? null : Path.Combine(root, ".complete");
         }
 
-        // Accents fold out first, matching LaunchBoxService.NormalizeName on the
-        // Jellyfin side; this function was ported from it without the fold.
+        // Accents fold out first, as in LaunchBoxService.NormalizeName on the Jellyfin side.
         internal static string NormalizeName(string value)
         {
             var sb = new StringBuilder(value.Length);

@@ -4,10 +4,7 @@ using Xunit;
 namespace Emby.Plugins.Moonfin.Tests;
 
 /// <summary>
-/// A rom file and the metadata record it should match rarely agree on accents: a no-intro set
-/// writes "Pokémon", a hand-renamed file writes "Pokemon". Both name normalisers fold accents
-/// out so the two spellings meet, the way the Jellyfin plugin's RdbMatcher and LaunchBoxService
-/// always have.
+/// Both name normalisers fold accents, so a rom named "Pokemon" matches the record for "Pokémon".
 /// </summary>
 public class GameNameNormalizationTests
 {
@@ -48,10 +45,7 @@ public class GameNameNormalizationTests
         Assert.Equal(expected, GameLaunchBoxHelper.NormalizeName(input));
     }
 
-    // NTFS lets a file or folder name hold an unpaired surrogate, and string.Normalize
-    // throws on one. GetSystems, GetGames, GetGame and ResolveThumbSource all normalise
-    // a folder name outside any try, so a single odd name must not take the scan down.
-    // It falls back to the unfolded name, which is what every name did before folding.
+    // NTFS allows an unpaired surrogate, which string.Normalize throws on; the name stays unfolded.
     [Theory]
     [InlineData("\ud800")]
     [InlineData("Game\udfff Name")]
@@ -74,8 +68,7 @@ public class GameNameNormalizationTests
         Assert.Equal("gamename", GamesScanner.NormalizeAlphanumericLower("Game\udfffName"));
     }
 
-    // The bracket depth counter is what keeps a region tag out of the key. Folding runs first,
-    // so a combining mark must not be mistaken for a bracket on the way past.
+    // Folding runs first, so a combining mark mustn't be mistaken for a bracket.
     [Fact]
     public void LaunchBoxNormalizeName_KeepsNestedBracketsBalanced()
     {

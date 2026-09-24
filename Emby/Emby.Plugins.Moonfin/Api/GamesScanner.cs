@@ -497,15 +497,8 @@ namespace Emby.Plugins.Moonfin.Api
             return "nes";
         }
 
-        // Accents fold out before the letter test, so a rom file and a metadata
-        // record that spell the same name with and without them still match.
-        // char.IsLetterOrDigit is true of an accented letter, so without the fold
-        // the two spellings never meet. Mirrors RdbMatcher.NormalizeName on the
-        // Jellyfin side, which has always folded.
-        // string.Normalize throws on an unpaired surrogate, which NTFS allows in a
-        // file or folder name. A name that cannot be decomposed is used as it stands
-        // rather than taken down the scan with it: it simply does not fold, which is
-        // what every name did before folding was added.
+        // Accents fold out before the letter test, as RdbMatcher.NormalizeName does on the Jellyfin side.
+        // string.Normalize throws on an unpaired surrogate, which NTFS allows, so such a name stays unfolded.
         internal static string FoldedForm(string value)
         {
             try
