@@ -7,9 +7,7 @@ using Xunit;
 namespace Emby.Plugins.Moonfin.Tests;
 
 /// <summary>
-/// The ratings endpoint trims MDBList's answer to the sources the profile picked, in the
-/// order it picked them. Profiles are written by the dashboard and every client, which do not
-/// all spell a source the same way.
+/// The ratings endpoint keeps the profile's sources in the profile's order, however each is spelled.
 /// </summary>
 public class MdbListRatingFilterTests
 {
@@ -24,8 +22,7 @@ public class MdbListRatingFilterTests
     [Fact]
     public void OneSourceUnderTwoSpellingsComesBackOnce()
     {
-        // The TV's picker didn't recognise the dashboard's camelCase id, so ticking
-        // MyAnimeList there added a second entry next to the first.
+        // The TV's picker added myanimelist next to the dashboard's myAnimeList.
         var result = RatingsService.FilterAndOrderRatings(
             AllRatings(), new List<string> { "myAnimeList", "imdb", "myanimelist" });
 

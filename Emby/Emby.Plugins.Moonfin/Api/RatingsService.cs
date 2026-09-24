@@ -221,9 +221,7 @@ namespace Emby.Plugins.Moonfin.Api
                 if (!string.IsNullOrEmpty(r.Source)) bySource[r.Source] = r;
 
             var result = new List<MdbListRating>();
-            // A profile can name one source twice under different spellings, such as the
-            // dashboard's myAnimeList next to a client's myanimelist. The lookup ignores case, so
-            // both would find the same rating and it would be drawn twice. The first one wins.
+            // A profile can name one source twice in different case, and the lookup ignores case. The first one wins.
             var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var src in sources)
             {
